@@ -8,7 +8,12 @@ function isMaximized(client) {
 var blacklist = []; // initialized in init()
 const always_blacklist = ["plasmashell"]
 const managed = [];
+const panelLocationsToHide = [];
 var useWhitelist;
+var hidePanelTop;
+var hidePanelBottom;
+var hidePanelLeft;
+var hidePanelRight;
 
 function tryManage(client) {
     if (always_blacklist.includes(client.resourceName.toString())){
@@ -49,14 +54,16 @@ workspace.clientRemoved.connect((client) => {
     }
 });
 
-var togglePanel = function (client, maximized) {
+var togglePanel = function (client, maximized, panelLocationsToHide) {
     var screen = client.screen
-    console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized)
+    console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
+    let locationsString = panelLocationsToHide.join(",");
     let togglePanelScript = `
+    let locations = '${locationsString}'.split(',');
     for (var i = 0; i < panelIds.length;i++) {
         panel = panelById(panelIds[i]);
         // check if the panel is in the current screen
-        if (panel.screen == ${screen} && panel.location=="bottom") {
+        if (panel.screen == ${screen} && locations.includes(panel.location.toString())) {
             // if window is maximized enable autohide
             if(panel.hiding == "none" && ${maximized}) {
                 panel.hiding = "autohide";
@@ -68,13 +75,15 @@ var togglePanel = function (client, maximized) {
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
 }
 
-var unhideAllPanels = function () {
+var unhideAllPanels = function (panelLocationsToHide) {
+    let locationsString = panelLocationsToHide.join(",");
     console.log("UNHIDE ALL PANELS:")
     let togglePanelScript = `
+    locations = '${locationsString}'.split(',');
     for (var i = 0; i < panelIds.length;i++) {
         panel = panelById(panelIds[i]);
         // check if the panel is in the current screen
-        if (panel.location=="bottom") {
+        if (locations.includes(panel.location.toString())) {
             // if window is maximized enable autohide
             if(panel.hiding != "none") {
                 panel.hiding = "none";
@@ -88,21 +97,21 @@ var unhideAllPanels = function () {
 workspace.clientMaximizeSet.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
         var maximized = isMaximized(client);
-        togglePanel(client, maximized);
+        togglePanel(client, maximized, panelLocationsToHide);
     }
 });
 
 workspace.clientMinimized.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
         // var maximized = isMaximized(client);
-        togglePanel(client, false);
+        togglePanel(client, false, panelLocationsToHide);
     }
 });
 
 workspace.clientUnminimized.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
         var maximized = isMaximized(client);
-        togglePanel(client, maximized);
+        togglePanel(client, maximized, panelLocationsToHide);
     }
 });
 
@@ -118,8 +127,7 @@ workspace.currentDesktopChanged.connect(() => {
         //togglePanel(client, false);
         if (client.desktop == currentDesktop && isManaged(client)){
             var maximized = isMaximized(client);
-            //togglePanel(client, false);
-            togglePanel(client, maximized);
+            togglePanel(client, maximized, panelLocationsToHide);
         }
     }
 });
@@ -129,8 +137,26 @@ workspace.currentDesktopChanged.connect(() => {
 function init() {
     //blacklist = readConfig("blacklist", "yakuake").split(",").filter((name) => name.length != 0);
     filterList = readConfig("FilterClassName", "").split(",").filter((name) => name.length != 0);
-    useWhitelist = readConfig("UseWhitelist", false)
-    console.log("WHITELIST MODE:",useWhitelist)
+    useWhitelist = readConfig("UseWhitelist", false);
+    hidePanelTop = readConfig("HidePanelTop", false);
+    hidePanelBottom = readConfig("HidePanelBottom", true);
+    hidePanelLeft = readConfig("HidePanelLeft", false);
+    hidePanelRight = readConfig("HidePanelRight", false);
+    console.log("FILTERED WINDOWS:", filterList);
+    console.log("PANELS TO HIDE top:", hidePanelTop,"bottom:", hidePanelBottom,"left:", hidePanelLeft,"right:", hidePanelRight);
+    if (hidePanelTop) {
+        panelLocationsToHide.push('top');
+    }
+    if (hidePanelBottom) {
+        panelLocationsToHide.push('bottom');
+    }
+    if (hidePanelLeft) {
+        panelLocationsToHide.push('left');
+    }
+    if (hidePanelRight) {
+        panelLocationsToHide.push('right');
+    }
+    console.log("WHITELIST MODE:",useWhitelist);
 }
 
 options.configChanged.connect(init);

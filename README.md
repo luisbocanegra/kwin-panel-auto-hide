@@ -22,11 +22,7 @@ A KWin script that hides Plasma panels when there are maximized windows (all/top
 
 ### Current
 
-* [ ] Configurable which panels to hide (hardcoded as of now)
-  * [x] bottom
-  * [ ] top
-  * [ ] right
-  * [ ] left
+* [x] Configurable which panels to hide (`top`, `bottom`, `left`, `right`)
 * [x] Toggles auto hide only on screen with visible maximized window
   * [x] Unhides panel on minimize of maximized window
   * [x] Hides panel on unminimize of maximized window

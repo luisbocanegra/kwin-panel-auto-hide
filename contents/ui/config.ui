@@ -16,9 +16,6 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="10" column="1" colspan="2">
     <widget class="QCheckBox" name="kcfg_HidePanelTop">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tile popup/placeholder windows or not&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
      <property name="text">
       <string>Top</string>
      </property>
@@ -153,9 +150,6 @@
     <widget class="QCheckBox" name="kcfg_HidePanelBottom">
      <property name="text">
       <string>Bottom</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
      </property>
     </widget>
    </item>
