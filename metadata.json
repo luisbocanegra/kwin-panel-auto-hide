@@ -1,0 +1,21 @@
+{
+	"KPlugin": {
+		"Name": "Panel auto hide",
+		"Description": "Automatically hide Plasma panels when there are maximized windows (all/top/bottom/left/right).",
+		"Icon": "desktop",
+		"Version": "0.1.0",
+		"Id": "panelautohide",
+		"License": "GPLv3",
+		"Website": "https://github.com/luisbocanegra/kwin-panel-auto-hide",
+		"Authors": [
+			{
+				"Name": "Luis Bocanegra",
+				"Email": "luisbocanegra17b@gmail.com"
+			}
+		]
+	},
+	"X-Plasma-API": "javascript",
+	"X-Plasma-MainScript": "code/main.js",
+	"KPackageStructure": "KWin/Script",
+	"X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted"
+}
