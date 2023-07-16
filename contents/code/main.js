@@ -32,10 +32,10 @@ function tryManage(client) {
         }
     }
     console.log("WHITELISTED ",client.caption,client.resourceName.toString(),client.screen,client.maximized);
-    managed.push(client.frameId);
+    managed.push(client);
 }
 function isManaged(client) {
-    return managed.includes(client.frameId);
+    return managed.includes(client);
 }
 
 // listeners
@@ -50,7 +50,7 @@ workspace.clientAdded.connect(clientAdded);
 
 workspace.clientRemoved.connect((client) => {
     if (isManaged(client)) {
-        managed.splice(managed.indexOf(client.frameId), 1);
+        managed.splice(managed.indexOf(client), 1);
     }
 });
 
