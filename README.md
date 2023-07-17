@@ -62,3 +62,4 @@ PRs are welcome!
 
 * Based on (but not forked from) [fin444/truely-maximized](https://github.com/fin444/truely-maximized)
 * Config ui file was adapted from [zeroxoneafour/polonium](https://github.com/zeroxoneafour/polonium)
+* [This tubbadu's reddit comment on how to toggle panels auto hide](https://www.reddit.com/r/kde/comments/zmd2zq/comment/j0q4rks/?utm_source=share&utm_medium=web2x&context=3)
