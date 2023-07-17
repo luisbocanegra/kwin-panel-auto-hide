@@ -1,7 +1,7 @@
 // utils
 function isMaximized(client) {
     var area = workspace.clientArea(KWin.MaximizeArea, client);
-    return client.width >= area.width && client.height >= area.height || client.maximized;
+    return client.width >= area.width && client.height >= area.height;
 }
 
 // management code
@@ -118,13 +118,13 @@ workspace.clientUnminimized.connect((client, horizontalMaximized, verticalMaximi
 workspace.currentDesktopChanged.connect(() => {
     console.log("")
     console.log("VIRTUAL DESKTOP CHANGED")
-    unhideAllPanels();
+    unhideAllPanels(panelLocationsToHide);
     console.log("")
     const clients = workspace.clientList();
     var currentDesktop = workspace.currentDesktop;
     for (var i = 0; i < clients.length; i++) {
         client = clients[i];
-        //togglePanel(client, false);
+        togglePanel(client, false, panelLocationsToHide);
         if (client.desktop == currentDesktop && isManaged(client)){
             var maximized = isMaximized(client);
             togglePanel(client, maximized, panelLocationsToHide);
