@@ -15,6 +15,12 @@ var hidePanelBottom;
 var hidePanelLeft;
 var hidePanelRight;
 
+const panelLocationsToDodge = [];
+var dodgePanelTop;
+var dodgePanelBottom;
+var dodgePanelLeft;
+var dodgePanelRight;
+
 function tryManage(client) {
     if (always_blacklist.includes(client.resourceName.toString())){
         console.log("BLACKLISTED ",client.caption,client.resourceName.toString(),client.screen,client.maximized);
@@ -40,7 +46,7 @@ function tryManage(client) {
         var currentDesktop = workspace.currentDesktop;
         if (!maximized) {
             if (client.desktop == currentDesktop){
-                tryDodge(client, maximized, panelLocationsToHide);
+                tryDodge(client, maximized, panelLocationsToHide,panelLocationsToDodge);
             }
         }
     });
@@ -52,10 +58,6 @@ function isManaged(client) {
 // listeners
 function clientAdded(client) {
     tryManage(client);
-    var maximized = isMaximized(client);
-    // if (isManaged(client) && maximized) {
-    //     togglePanel(client, maximized);
-    // }
 }
 workspace.clientAdded.connect(clientAdded);
 
@@ -65,33 +67,60 @@ workspace.clientRemoved.connect((client) => {
     }
 });
 
-var togglePanel = function (client, maximized, panelLocationsToHide) {
+var togglePanel = function (client, maximized, panelLocationsToHide, panelLocationsToDodge) {
     var screen = client.screen
     console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
     let locationsString = panelLocationsToHide.join(",");
+    let locationsDodgeString = panelLocationsToDodge.join(",");
+
     let togglePanelScript = `
     let locations = '${locationsString}'.split(',');
+    let locationsDodge = '${locationsDodgeString}'.split(',');
+
     for (var i = 0; i < panelIds.length;i++) {
         panel = panelById(panelIds[i]);
+        
         // check if the panel is in the current screen
-        if (panel.screen == ${screen}) {
-            if (locations.includes(panel.location.toString())) {
-                // if window is maximized enable autohide
-                if(panel.hiding != "autohide" && ${maximized}) {
-                    panel.hiding = "autohide";
-                } else {
-                    panel.hiding = "windowsbelow";
-                }
+        if (panel.screen == ${screen} && locations.includes(panel.location.toString())) {
+            // if window is maximized enable autohide
+            if(panel.hiding != "autohide" && ${maximized}) {
+                panel.hiding = "autohide";
             } else {
                 panel.hiding = "none";
+                if (locationsDodge.includes(panel.location.toString())) {
+                    panel.hiding = "windowsbelow";
+                }
             }
-            panel.reloadConfig();
         }
     }`
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
 }
 
-var tryDodge = function (client, maximized, panelLocationsToHide) {
+var togglePanelG = function (client, maximized, panelLocationsToHide) {
+    var screen = client.screen
+    console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
+    let locationsString = panelLocationsToHide.join(",");
+
+    let togglePanelScript = `
+    let locations = '${locationsString}'.split(',');
+
+    for (var i = 0; i < panelIds.length;i++) {
+        panel = panelById(panelIds[i]);
+
+        // check if the panel is in the current screen
+        if (panel.screen == ${screen} && locations.includes(panel.location.toString())) {
+            // if window is maximized enable autohide
+            if(panel.hiding == "none" && ${maximized}) {
+                panel.hiding = "autohide";
+            } else {
+                panel.hiding = "none";
+            }
+        }
+    }`
+    callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
+}
+
+var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsToDodge) {
 
     winPos = client.pos
     winSize = client.size
@@ -113,9 +142,11 @@ var tryDodge = function (client, maximized, panelLocationsToHide) {
     console.log("SCREEN HEIGHT:",screenHeight);
     console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
     let locationsString = panelLocationsToHide.join(",");
+    let locationsDodgeString = panelLocationsToDodge.join(",");
     let togglePanelScript = `
     //print("SCREEN HEIGHT:",screenHeight);
     let locations = '${locationsString}'.split(',');
+    let locationsDodge = '${locationsDodgeString}'.split(',');
     let topPanelHeight=0;
     let bottomPanelHeight=0;
     let leftPanelHeight=0;
@@ -147,33 +178,54 @@ var tryDodge = function (client, maximized, panelLocationsToHide) {
             
             if(panel.location=="bottom") {
                 if(${windowBottomY}>realAreaHeight-bottomPanelHeight) {
-                    panel.hiding = "autohide";
+                    
+                    if (locationsDodge.includes(panel.location.toString())) {
+                        panel.hiding = "autohide";
+                    } else {
+                        panel.hiding = "windowsbelow";
+                    }
+
                 } else {
-                    panel.hiding = "windowsbelow";
+                    panel.hiding = "none";
                 }
             }
             
             if(panel.location=="right") {
                 if(${windowBottomX}>realAreaWidth-rightPanelHeight) {
-                    panel.hiding = "autohide";
+                    if (locationsDodge.includes(panel.location.toString())) {
+                        panel.hiding = "autohide";
+                    } else {
+                        panel.hiding = "windowsbelow";
+                    }
+                    
                 } else {
-                    panel.hiding = "windowsbelow";
+                    panel.hiding = "none";
                 }
             }
 
             if(panel.location=="top") {
                 if(${windowTopY}<topPanelHeight) {
-                    panel.hiding = "autohide";
+                    if (locationsDodge.includes(panel.location.toString())) {
+                        panel.hiding = "autohide";
+                    } else {
+                        panel.hiding = "windowsbelow";
+                    }
+                    
                 } else {
-                    panel.hiding = "windowsbelow";
+                    panel.hiding = "none";
                 }
             }
 
             if(panel.location=="left") {
                 if(${windowTopX}<leftPanelHeight) {
-                    panel.hiding = "autohide";
+                    if (locationsDodge.includes(panel.location.toString())) {
+                        panel.hiding = "autohide";
+                    } else {
+                        panel.hiding = "windowsbelow";
+                    }
+                    
                 } else {
-                    panel.hiding = "windowsbelow";
+                    panel.hiding = "none";
                 }
             }
 
@@ -205,21 +257,21 @@ var unhideAllPanels = function (panelLocationsToHide) {
 workspace.clientMaximizeSet.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
         var maximized = isMaximized(client);
-        togglePanel(client, maximized, panelLocationsToHide);
+        togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
     }
 });
 
 workspace.clientMinimized.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
         // var maximized = isMaximized(client);
-        togglePanel(client, false, panelLocationsToHide);
+        togglePanel(client, false, panelLocationsToHide,panelLocationsToDodge);
     }
 });
 
 workspace.clientUnminimized.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
         var maximized = isMaximized(client);
-        togglePanel(client, maximized, panelLocationsToHide);
+        togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
     }
 });
 
@@ -232,10 +284,10 @@ workspace.currentDesktopChanged.connect(() => {
     var currentDesktop = workspace.currentDesktop;
     for (var i = 0; i < clients.length; i++) {
         client = clients[i];
-        togglePanel(client, false, panelLocationsToHide);
+        togglePanel(client, false, panelLocationsToHide,panelLocationsToDodge);
         if (client.desktop == currentDesktop && isManaged(client)){
             var maximized = isMaximized(client);
-            togglePanel(client, maximized, panelLocationsToHide);
+            togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
         }
     }
 });
@@ -250,8 +302,13 @@ function init() {
     hidePanelBottom = readConfig("HidePanelBottom", true);
     hidePanelLeft = readConfig("HidePanelLeft", false);
     hidePanelRight = readConfig("HidePanelRight", false);
+    dodgePanelTop = readConfig("DodgePanelTop", false);
+    dodgePanelBottom = readConfig("DodgePanelBottom", true);
+    dodgePanelLeft = readConfig("DodgePanelLeft", false);
+    dodgePanelRight = readConfig("DodgePanelRight", false);
     console.log("FILTERED WINDOWS:", filterList);
     console.log("PANELS TO HIDE top:", hidePanelTop,"bottom:", hidePanelBottom,"left:", hidePanelLeft,"right:", hidePanelRight);
+
     if (hidePanelTop) {
         panelLocationsToHide.push('top');
     }
@@ -263,6 +320,19 @@ function init() {
     }
     if (hidePanelRight) {
         panelLocationsToHide.push('right');
+    }
+
+    if (dodgePanelTop) {
+        panelLocationsToDodge.push('top');
+    }
+    if (dodgePanelBottom) {
+        panelLocationsToDodge.push('bottom');
+    }
+    if (dodgePanelLeft) {
+        panelLocationsToDodge.push('left');
+    }
+    if (dodgePanelRight) {
+        panelLocationsToDodge.push('right');
     }
     console.log("WHITELIST MODE:",useWhitelist);
 }
