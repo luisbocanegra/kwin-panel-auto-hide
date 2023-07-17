@@ -33,6 +33,18 @@ function tryManage(client) {
     }
     console.log("WHITELISTED ",client.caption,client.resourceName.toString(),client.screen,client.maximized);
     managed.push(client);
+
+    client.frameGeometryChanged.connect(function() {
+        // Your code here
+        winPos = client.pos
+        winSize = client.size
+        console.log("GEOMETRY CHANGED:",client.resourceName,winPos.x,winPos.y,winSize.width,winSize.height)
+        var maximized = isVerticallyMaximized(client);
+        var currentDesktop = workspace.currentDesktop;
+        if (client.desktop == currentDesktop){
+            tryDodge(client, maximized, panelLocationsToHide);
+        }
+    });
 }
 function isManaged(client) {
     return managed.includes(client);
@@ -75,6 +87,45 @@ var togglePanel = function (client, maximized, panelLocationsToHide) {
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
 }
 
+var tryDodge = function (client, maximized, panelLocationsToHide) {
+
+    winPos = client.pos
+    winSize = client.size
+    //console.log("GEOMETRY CHANGED:",client.resourceName,winPos.x,winPos.y,winSize.width,winSize.height)
+
+    windowBottomY = winPos.y + winSize.height
+    var area = workspace.clientArea(KWin.MaximizeArea, client);
+    areaHeight = area.height;
+
+
+    var screen = client.screen
+    console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
+    let locationsString = panelLocationsToHide.join(",");
+    let togglePanelScript = `
+    let locations = '${locationsString}'.split(',');
+    let fixedPanelHeight=0
+    for (var i=0; i < panelIds.length;i++){
+        panel = panelById(panelIds[i]);
+        if (panel.screen == ${screen} && !locations.includes(panel.location.toString())){
+        fixedPanelHeight+=panel.height;
+        }
+    }
+
+    for (var i = 0; i < panelIds.length;i++) {
+        panel = panelById(panelIds[i]);
+        // check if the panel is in the current screen
+        if (panel.screen == ${screen} && locations.includes(panel.location.toString())) {
+
+            if(${maximized} || ${windowBottomY}-fixedPanelHeight>=${areaHeight}-panel.height) {
+                panel.hiding = "autohide";
+            } else {
+                panel.hiding = "none";
+            }
+        }
+    }`
+    callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
+}
+
 var unhideAllPanels = function (panelLocationsToHide) {
     let locationsString = panelLocationsToHide.join(",");
     console.log("UNHIDE ALL PANELS:")
@@ -94,12 +145,12 @@ var unhideAllPanels = function (panelLocationsToHide) {
 }
 
 
-workspace.clientMaximizeSet.connect((client, horizontalMaximized, verticalMaximized) => {
-    if (isManaged(client)) {
-        var maximized = isVerticallyMaximized(client);
-        togglePanel(client, maximized, panelLocationsToHide);
-    }
-});
+// workspace.clientMaximizeSet.connect((client, horizontalMaximized, verticalMaximized) => {
+//     if (isManaged(client)) {
+//         var maximized = isVerticallyMaximized(client);
+//         togglePanel(client, maximized, panelLocationsToHide);
+//     }
+// });
 
 workspace.clientMinimized.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
