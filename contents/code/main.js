@@ -86,11 +86,14 @@ var togglePanel = function (client, maximized, panelLocationsToHide, panelLocati
             if(panel.hiding != "autohide" && ${maximized}) {
                 panel.hiding = "autohide";
             } else {
-                panel.hiding = "none";
                 if (locationsDodge.includes(panel.location.toString())) {
                     panel.hiding = "windowsbelow";
+                } else {
+                    panel.hiding = "none";
                 }
             }
+        } else {
+            panel.hiding = "none";
         }
     }`
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
@@ -174,62 +177,47 @@ var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsT
     for (var i = 0; i < panelIds.length;i++) {
         panel = panelById(panelIds[i]);
         // check if the panel is in the current screen
-        if (panel.screen == ${screen} && locations.includes(panel.location.toString())) {
+        if (panel.screen == ${screen} && locations.includes(panel.location.toString()) && locationsDodge.includes(panel.location.toString())) {
             
-            if(panel.location=="bottom") {
-                if(${windowBottomY}>realAreaHeight-bottomPanelHeight) {
-                    
-                    if (locationsDodge.includes(panel.location.toString())) {
-                        panel.hiding = "autohide";
-                    } else {
-                        panel.hiding = "windowsbelow";
-                    }
-
+            if (panel.location=="bottom") {
+                if (${windowBottomY}>realAreaHeight-bottomPanelHeight) {
+                    panel.hiding = "autohide";
                 } else {
-                    panel.hiding = "none";
+                    //panel.hiding = "none";
+                    panel.hiding = "windowsbelow";
                 }
             }
             
-            if(panel.location=="right") {
-                if(${windowBottomX}>realAreaWidth-rightPanelHeight) {
-                    if (locationsDodge.includes(panel.location.toString())) {
+            if (panel.location=="right") {
+                if (${windowBottomX}>realAreaWidth-rightPanelHeight) {
                         panel.hiding = "autohide";
-                    } else {
-                        panel.hiding = "windowsbelow";
-                    }
-                    
                 } else {
-                    panel.hiding = "none";
+                    //panel.hiding = "none";
+                    panel.hiding = "windowsbelow";
                 }
             }
 
             if(panel.location=="top") {
                 if(${windowTopY}<topPanelHeight) {
-                    if (locationsDodge.includes(panel.location.toString())) {
-                        panel.hiding = "autohide";
-                    } else {
-                        panel.hiding = "windowsbelow";
-                    }
-                    
+                    panel.hiding = "autohide";
                 } else {
-                    panel.hiding = "none";
+                    //panel.hiding = "none";
+                    panel.hiding = "windowsbelow";
                 }
             }
 
             if(panel.location=="left") {
                 if(${windowTopX}<leftPanelHeight) {
-                    if (locationsDodge.includes(panel.location.toString())) {
-                        panel.hiding = "autohide";
-                    } else {
-                        panel.hiding = "windowsbelow";
-                    }
-                    
+                    panel.hiding = "autohide";
                 } else {
-                    panel.hiding = "none";
+                    //panel.hiding = "none";
+                    panel.hiding = "windowsbelow";
                 }
             }
 
             panel.reloadConfig();
+        } else {
+            panel.hiding = "none";
         }
     }`
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);

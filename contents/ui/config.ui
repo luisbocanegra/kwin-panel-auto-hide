@@ -26,6 +26,9 @@
          <property name="text">
           <string>Top</string>
          </property>
+         <property name="enabled">
+                <bool>false</bool>
+               </property>
         </widget>
        </item>
        <item row="19" column="1" colspan="2">
@@ -33,6 +36,9 @@
          <property name="text">
           <string>Bottom</string>
          </property>
+         <property name="enabled">
+                <bool>false</bool>
+               </property>
         </widget>
        </item>
        <item row="20" column="1" colspan="2">
@@ -40,6 +46,9 @@
          <property name="text">
           <string>Left</string>
          </property>
+         <property name="enabled">
+                <bool>false</bool>
+               </property>
         </widget>
        </item>
        <item row="21" column="1" colspan="2">
@@ -47,6 +56,9 @@
          <property name="text">
           <string>Right</string>
          </property>
+         <property name="enabled">
+                <bool>false</bool>
+               </property>
         </widget>
        </item>
    <item row="0" column="1" colspan="2">
@@ -260,5 +272,33 @@ Comma separated list of class names.</string>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+        <connection>
+         <sender>kcfg_HidePanelTop</sender>
+         <signal>toggled(bool)</signal>
+         <receiver>kcfg_DodgePanelTop</receiver>
+         <slot>setEnabled(bool)</slot>
+        </connection>
+        
+        <connection>
+        <sender>kcfg_HidePanelBottom</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>kcfg_DodgePanelBottom</receiver>
+        <slot>setEnabled(bool)</slot>
+        </connection>
+        
+        <connection>
+        <sender>kcfg_HidePanelLeft</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>kcfg_DodgePanelLeft</receiver>
+        <slot>setEnabled(bool)</slot>
+        </connection>
+
+        <connection>
+        <sender>kcfg_HidePanelRight</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>kcfg_DodgePanelRight</receiver>
+        <slot>setEnabled(bool)</slot>
+        </connection>
+       </connections>
 </ui>
