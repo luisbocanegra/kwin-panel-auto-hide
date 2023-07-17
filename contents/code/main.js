@@ -1,7 +1,7 @@
 // utils
-function isMaximized(client) {
+function isVerticallyMaximized(client) {
     var area = workspace.clientArea(KWin.MaximizeArea, client);
-    return client.width >= area.width && client.height >= area.height;
+    return client.height >= area.height;
 }
 
 // management code
@@ -41,7 +41,7 @@ function isManaged(client) {
 // listeners
 function clientAdded(client) {
     tryManage(client);
-    var maximized = isMaximized(client);
+    var maximized = isVerticallyMaximized(client);
     // if (isManaged(client) && maximized) {
     //     togglePanel(client, maximized);
     // }
@@ -96,21 +96,21 @@ var unhideAllPanels = function (panelLocationsToHide) {
 
 workspace.clientMaximizeSet.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
-        var maximized = isMaximized(client);
+        var maximized = isVerticallyMaximized(client);
         togglePanel(client, maximized, panelLocationsToHide);
     }
 });
 
 workspace.clientMinimized.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
-        // var maximized = isMaximized(client);
+        // var maximized = isVerticallyMaximized(client);
         togglePanel(client, false, panelLocationsToHide);
     }
 });
 
 workspace.clientUnminimized.connect((client, horizontalMaximized, verticalMaximized) => {
     if (isManaged(client)) {
-        var maximized = isMaximized(client);
+        var maximized = isVerticallyMaximized(client);
         togglePanel(client, maximized, panelLocationsToHide);
     }
 });
@@ -126,7 +126,7 @@ workspace.currentDesktopChanged.connect(() => {
         client = clients[i];
         togglePanel(client, false, panelLocationsToHide);
         if (client.desktop == currentDesktop && isManaged(client)){
-            var maximized = isMaximized(client);
+            var maximized = isVerticallyMaximized(client);
             togglePanel(client, maximized, panelLocationsToHide);
         }
     }
