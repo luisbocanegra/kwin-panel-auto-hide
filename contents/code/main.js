@@ -20,24 +20,25 @@ var dodgePanelTop;
 var dodgePanelBottom;
 var dodgePanelLeft;
 var dodgePanelRight;
+var enableDebug;
 
 function tryManage(client) {
     if (always_blacklist.includes(client.resourceName.toString())){
-        console.log("BLACKLISTED ",client.caption,client.resourceName.toString(),client.screen,client.maximized);
+        printLog `BLACKLISTED Name: ${client.caption} Class: ${client.resourceName.toString()} Screen: ${client.screen}`;
         return;
     }
     if (useWhitelist) {
         if (!filterList.includes(client.resourceName.toString())) {
-            console.log("BLACKLISTED ",client.caption,client.resourceName.toString(),client.screen,client.maximized);
+            printLog `BLACKLISTED Name: ${client.caption} Class: ${client.resourceName.toString()} Screen: ${client.screen}`;
             return;
         }
     } else {
         if (filterList.includes(client.resourceName.toString())) {
-            console.log("BLACKLISTED ",client.caption,client.resourceName.toString(),client.screen,client.maximized);
+            printLog `BLACKLISTED Name: ${client.caption} Class: ${client.resourceName.toString()} Screen: ${client.screen}`;
             return;
         }
     }
-    console.log("WHITELISTED ",client.caption,client.resourceName.toString(),client.screen,client.maximized);
+    printLog `WHITELISTED Name: ${client.caption} Class: ${client.resourceName.toString()} Screen: ${client.screen}`;
     managed.push(client);
 
     
@@ -69,7 +70,7 @@ workspace.clientRemoved.connect((client) => {
 
 var togglePanel = function (client, maximized, panelLocationsToHide, panelLocationsToDodge) {
     var screen = client.screen
-    console.log("TOGGLE_PANEL: Class:", client.resourceName.toString(),"Screen:", screen,"Maximized:" ,maximized)
+    printLog `TOGGLE_PANEL: Class: ${client.resourceName.toString()} Screen: ${screen} Maximized: ${maximized}`
     let locationsString = panelLocationsToHide.join(",");
     let locationsDodgeString = panelLocationsToDodge.join(",");
 
@@ -112,8 +113,8 @@ var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsT
     windowTopY = winPos.y
     windowTopX = winPos.x
     
-    console.log("TRY_DODGE: Class:", client.resourceName.toString(),"Screen:", screen, "Maximized:",maximized)
-    console.log("WINDOW GEOMETRY:","X:",winPos.x,"Y",winPos.y,"W",winSize.width,"H",winSize.height)
+    printLog `TRY_DODGE: Class: ${client.resourceName.toString()} Screen: ${screen} Maximized: ${maximized}`
+    printLog `WINDOW GEOMETRY: X: ${winPos.x} Y: ${winPos.y} W: ${winSize.width} H: ${winSize.height}`
     //console.log("SCREEN GEOMETRY:",screenGeometry)
     
 
@@ -198,7 +199,7 @@ var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsT
 var unhideAllPanels = function (panelLocationsToHide,panelLocationsToDodge) {
     let locationsString = panelLocationsToHide.join(",");
     let locationsDodgeString = panelLocationsToHide.join(",");
-    console.log("UNHIDE ALL PANELS:")
+    printLog `UNHIDE ALL PANELS`
     let togglePanelScript = `
     locations = '${locationsString}'.split(',');
     locationsDodge = '${locationsDodgeString}'.split(',');
@@ -217,6 +218,7 @@ var unhideAllPanels = function (panelLocationsToHide,panelLocationsToDodge) {
 
 
 workspace.clientMaximizeSet.connect((client, horizontalMaximized, verticalMaximized) => {
+    printLog `CLIENT MAXIMIZED`;
     if (isManaged(client)) {
         var maximized = isMaximized(client);
         togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
@@ -224,7 +226,7 @@ workspace.clientMaximizeSet.connect((client, horizontalMaximized, verticalMaximi
 });
 
 workspace.clientMinimized.connect((client, horizontalMaximized, verticalMaximized) => {
-    console.log("CLIENT MINIMIZED")
+    printLog `CLIENT MINIMIZED`;
     if (isManaged(client)) {
         // var maximized = isMaximized(client);
         togglePanel(client, false, panelLocationsToHide,panelLocationsToDodge);
@@ -233,7 +235,7 @@ workspace.clientMinimized.connect((client, horizontalMaximized, verticalMaximize
 });
 
 workspace.clientUnminimized.connect((client, horizontalMaximized, verticalMaximized) => {
-    console.log("CLIENT UNMINIMIZED")
+    printLog `CLIENT UNMINIMIZED`;
     if (isManaged(client)) {
         var maximized = isMaximized(client);
         togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
@@ -278,17 +280,25 @@ function reloadPanels() {
 }
 
 workspace.currentDesktopChanged.connect(() => {
-    console.log("")
-    console.log("VIRTUAL DESKTOP CHANGED")
+    printLog ``;
+    printLog `VIRTUAL DESKTOP CHANGED`;
     unhideAllPanels(panelLocationsToHide);
-    console.log("")
+    printLog ``;
     reloadPanels();
 });
 
+function printLog(strings, ...values) {
+    let str = 'KWSPAH: ';
+    strings.forEach((string, i) => {
+        str += string + (values[i] || '');
+    });
+    if (enableDebug) {
+        console.log(str);
+    }
+}
 
 // init
 function init() {
-    //blacklist = readConfig("blacklist", "yakuake").split(",").filter((name) => name.length != 0);
     filterList = readConfig("FilterClassName", "").split(",").filter((name) => name.length != 0);
     useWhitelist = readConfig("UseWhitelist", false);
     hidePanelTop = readConfig("HidePanelTop", false);
@@ -299,8 +309,9 @@ function init() {
     dodgePanelBottom = readConfig("DodgePanelBottom", true);
     dodgePanelLeft = readConfig("DodgePanelLeft", false);
     dodgePanelRight = readConfig("DodgePanelRight", false);
-    console.log("FILTERED WINDOWS:", filterList);
-    console.log("PANELS TO HIDE top:", hidePanelTop,"bottom:", hidePanelBottom,"left:", hidePanelLeft,"right:", hidePanelRight);
+    enableDebug = readConfig("EnableDebug",false);
+    printLog `FILTERED WINDOWS: ${filterList}`;
+    printLog `PANELS TO HIDE top: ${hidePanelTop} bottom: ${hidePanelBottom} left: ${hidePanelLeft} right: ${hidePanelRight}`;
 
     if (hidePanelTop) {
         panelLocationsToHide.push('top');
@@ -327,7 +338,7 @@ function init() {
     if (dodgePanelRight) {
         panelLocationsToDodge.push('right');
     }
-    console.log("WHITELIST MODE:",useWhitelist);
+    printLog `WHITELIST MODE ${useWhitelist}`;
 }
 
 options.configChanged.connect(init);

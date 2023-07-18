@@ -52,7 +52,7 @@
     </widget>
    </item>
    <item row="30" column="5" colspan="2">
-    <widget class="QCheckBox" name="kcfg_Debug">
+    <widget class="QCheckBox" name="kcfg_EnableDebug">
      <property name="toolTip">
       <string>Spams your user journal</string>
      </property>
