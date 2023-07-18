@@ -2,7 +2,7 @@
 
 A KWin script that hides Plasma panels when there are maximized windows (all/top/bottom/left/right).
 
-[demo](https://github.com/luisbocanegra/kwin-panel-auto-hide/assets/15076387/254a9bf5-4113-4bc2-b82b-bf7f9e028b90)
+[demo](https://github.com/luisbocanegra/kwin-panel-auto-hide/assets/15076387/63ca62d2-0325-4e42-99f2-9cc87b125d7d)
 
 ## Why? *Why not?*
 
@@ -27,10 +27,12 @@ A KWin script that hides Plasma panels when there are maximized windows (all/top
 * [x] Toggles auto hide only on screen with visible maximized window
   * [x] Unhides panel on minimize of maximized window
   * [x] Hides panel on unminimize of maximized window
-* [x] Configurable window class blacklist
   * [x] Whitelist mode
 * [x] Virtual desktop switching support
-* [x] Handle multiple windows minimizing/maximizing
+* [x] Configurable window class blacklist
+* [ ] Handle multiple windows on same screen
+  * [x] Minimizing/maximizing stacked windows (partially)
+  * [ ] Handle tiled windows
 * [x] Multi monitor support
   * [x] Handle windows position relative to the screen they are on
   * [ ] Handle windows switching between screens (`Alt`+`F3`>`Move to Screen`)
@@ -40,8 +42,7 @@ A KWin script that hides Plasma panels when there are maximized windows (all/top
 
 ### May be added
 
-* [ ] Support for multiple windows on screen
-  * [ ] Handle tiled windows
+* [ ] ?
 
 ### Setup
 
@@ -59,7 +60,14 @@ Just clone the repo. `make` commands have been set up to do all the things.
 2. Then calls  `org.kde.plasmashell /PlasmaShell evaluateScript` using `callDBus` with passed screen and maximized state
 3. The plasma script loops through all panels
    1. Checks if the panel screen property is the same as the window one
-   2. If it is then toggles auto hide depending on the window maximized state
+   2. If it is then toggles between `autohide` and `windowsbelow` depending on the window maximized state
+4. The dodge mode works by listening for windows geometry chanages
+   1. If a windows enters the area of a panel that can hide and has dodge mode enabled, the panel will be hidden
+   2. When the window leaves the panel area the panel is restored
+5. The reason for using `windowsbelow` is because:
+   * Tiled windows using shortcuts automatically enter the panel, making it dodge as intended
+   * Dodge movement seems smoother
+   * Switching from `autohide` to `windowscover` doesnt bring the panele back without hovering it first
 
 ## Contributing
 
