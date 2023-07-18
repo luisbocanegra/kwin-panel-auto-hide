@@ -221,18 +221,20 @@ var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsT
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
 }
 
-var unhideAllPanels = function (panelLocationsToHide) {
+var unhideAllPanels = function (panelLocationsToHide,panelLocationsToDodge) {
     let locationsString = panelLocationsToHide.join(",");
+    let locationsDodgeString = panelLocationsToHide.join(",");
     console.log("UNHIDE ALL PANELS:")
     let togglePanelScript = `
     locations = '${locationsString}'.split(',');
+    locationsDodge = '${locationsDodgeString}'.split(',');
     for (var i = 0; i < panelIds.length;i++) {
         panel = panelById(panelIds[i]);
         // check if the panel is in the current screen
         if (locations.includes(panel.location.toString())) {
-            // if window is maximized enable autohide
-            if(panel.hiding != "none") {
-                panel.hiding = "none";
+
+            if(panel.hiding != "windowsbelow") {
+                panel.hiding = "windowsbelow";
             }
         }
     }`
@@ -268,12 +270,20 @@ workspace.currentDesktopChanged.connect(() => {
     console.log("")
     const clients = workspace.clientList();
     var currentDesktop = workspace.currentDesktop;
+    // keep track of the screens where a maximized window was found,
+    // to only toggle panels once per screen and
+    // try enabling dodge mode for the rest of windows
+    const screens =[]
     for (var i = 0; i < clients.length; i++) {
         client = clients[i];
-        togglePanel(client, false, panelLocationsToHide,panelLocationsToDodge);
+        // togglePanel(client, false, panelLocationsToHide,panelLocationsToDodge);
         if (client.desktop == currentDesktop && isManaged(client)){
             var maximized = isMaximized(client);
-            togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
+            if (maximized && !screens.includes(client.screen)) {
+                togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
+                screens.push(client.screen)
+            }
+            tryDodge(client, maximized, panelLocationsToHide,panelLocationsToDodge);
         }
     }
 });
