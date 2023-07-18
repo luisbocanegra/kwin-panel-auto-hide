@@ -9,7 +9,7 @@ A KWin script that hides Plasma panels when there are maximized windows (all/top
 * I like to have a panel on a clean desktop but to stay away if I maximize
 * There is windows can cover but panel still shows behind translucent/blurred windows and I don't like that
 * Windows can cover sometimes doesnt show when hovering if maximized windows is present
-* Will probably enable me to replicate Latte dock "dodge" option :thought_balloon:
+* To replicate [Latte Dock](https://github.com/KDE/latte-dock)'s "dodge" mode
 
 ## Some notes
 
@@ -17,7 +17,7 @@ A KWin script that hides Plasma panels when there are maximized windows (all/top
 * **Panel on screen edge between two monitors does not auto hide**, this is a Plasma [BUG:351175](https://bugs.kde.org/show_bug.cgi?id=351175)
 * Primary monitor must be the left one!
   > If the right monitor is set as primary it will toggle panels on the opposite screen??? I could not find a solution for this due to my lack of knowledge on how Plasma and KWin scripting work but if someone knows how let me know or open a PR :)
-* I am a newbie so expect messy code and bugs :boom:
+* I am a newbie so expect messy code and bugs :lady_beetle:
 
 ## Features
 
@@ -44,7 +44,11 @@ A KWin script that hides Plasma panels when there are maximized windows (all/top
 
 * [ ] ?
 
-### Setup
+## Installing
+
+Download it from [KDE Store](https://store.kde.org/p/2063197) or use `KWin Scripts` > `Get New Scripts`/`Discover` > `Plasma Addons` > `search` > `panel auto hide`
+
+## Building
 
 Just clone the repo. `make` commands have been set up to do all the things.
 
@@ -57,7 +61,7 @@ Just clone the repo. `make` commands have been set up to do all the things.
 ## How does it work (*or at least tries to*)?
 
 1. When a window is created/maximized/unmaximized it gets on which iscreen it is
-2. Then calls  `org.kde.plasmashell /PlasmaShell evaluateScript` using `callDBus` with passed screen and maximized state
+2. Then calls `org.kde.plasmashell /PlasmaShell evaluateScript` using `callDBus` with passed screen and window properties
 3. The plasma script loops through all panels
    1. Checks if the panel screen property is the same as the window one
    2. If it is then toggles between `autohide` and `windowsbelow` depending on the window maximized state
@@ -67,7 +71,7 @@ Just clone the repo. `make` commands have been set up to do all the things.
 5. The reason for using `windowsbelow` is because:
    * Tiled windows using shortcuts automatically enter the panel, making it dodge as intended
    * Dodge movement seems smoother
-   * Switching from `autohide` to `windowscover` doesnt bring the panele back without hovering it first
+   * Switching from `autohide` to `windowscover` doesnt bring the panel back without hovering it first
 
 ## Contributing
 
