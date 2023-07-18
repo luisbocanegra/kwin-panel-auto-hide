@@ -13,7 +13,8 @@ A KWin script that hides Plasma panels when there are maximized windows (all/top
 
 ## Some notes
 
-* This had only been tested on a double monitor setup
+* This had only been tested on single/double monitor setups and can only handle a single window as of now
+* **Panel on screen edge between two monitors does not auto hide**, this is a Plasma [BUG:351175](https://bugs.kde.org/show_bug.cgi?id=351175)
 * Primary monitor must be the left one!
   > If the right monitor is set as primary it will toggle panels on the opposite screen??? I could not find a solution for this due to my lack of knowledge on how Plasma and KWin scripting work but if someone knows how let me know or open a PR :)
 * I am a newbie so expect messy code and bugs :boom:
@@ -28,13 +29,19 @@ A KWin script that hides Plasma panels when there are maximized windows (all/top
   * [x] Hides panel on unminimize of maximized window
 * [x] Configurable window class blacklist
   * [x] Whitelist mode
-* [ ] Virtual desktop support (hide only when window is in active Virtual desktop)
-  * [x] Seems to work but buggy
-* [ ] Show on Peek at desktop
+* [x] Virtual desktop switching support
+* [x] Handle multiple windows minimizing/maximizing
+* [x] Multi monitor support
+  * [x] Handle windows position relative to the screen they are on
+  * [ ] Handle windows switching between screens (`Alt`+`F3`>`Move to Screen`)
+* [x] Show on Peek at desktop
+* [x] Dodge mode (hide when a window enters panel area)
+  * [x] Dodge on panels set to dodge (only for panels with auto-hide enabled)
 
 ### May be added
 
-* [ ] Dodge mode
+* [ ] Support for multiple windows on screen
+  * [ ] Handle tiled windows
 
 ### Setup
 
