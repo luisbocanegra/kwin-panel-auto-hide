@@ -69,7 +69,7 @@ workspace.clientRemoved.connect((client) => {
 
 var togglePanel = function (client, maximized, panelLocationsToHide, panelLocationsToDodge) {
     var screen = client.screen
-    console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
+    console.log("TOGGLE_PANEL: Class:", client.resourceName.toString(),"Screen:", screen,"Maximized:" ,maximized)
     let locationsString = panelLocationsToHide.join(",");
     let locationsDodgeString = panelLocationsToDodge.join(",");
 
@@ -83,38 +83,12 @@ var togglePanel = function (client, maximized, panelLocationsToHide, panelLocati
         // check if the panel is in the current screen
         if (panel.screen == ${screen} && locations.includes(panel.location.toString())) {
             // if window is maximized enable autohide
-            if(panel.hiding != "autohide" && ${maximized}) {
-                panel.hiding = "autohide";
-            } else {
-                if (locationsDodge.includes(panel.location.toString())) {
-                    panel.hiding = "windowsbelow";
-                } else {
-                    panel.hiding = "none";
+            if (${maximized}){
+                if(panel.hiding != "autohide") {
+                    panel.hiding = "autohide";
                 }
-            }
-        }
-    }`
-    callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
-}
-
-var togglePanelG = function (client, maximized, panelLocationsToHide) {
-    var screen = client.screen
-    console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
-    let locationsString = panelLocationsToHide.join(",");
-
-    let togglePanelScript = `
-    let locations = '${locationsString}'.split(',');
-
-    for (var i = 0; i < panelIds.length;i++) {
-        panel = panelById(panelIds[i]);
-
-        // check if the panel is in the current screen
-        if (panel.screen == ${screen} && locations.includes(panel.location.toString())) {
-            // if window is maximized enable autohide
-            if(panel.hiding == "none" && ${maximized}) {
-                panel.hiding = "autohide";
             } else {
-                panel.hiding = "none";
+                panel.hiding = "windowsbelow";
             }
         }
     }`
@@ -137,16 +111,16 @@ var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsT
     windowBottomX = winPos.x + winSize.width
     windowTopY = winPos.y
     windowTopX = winPos.x
-
-    console.log("SCREEN GEOMETRY:",screenGeometry)
-    console.log("GEOMETRY CHANGED:",client.resourceName,"X:",winPos.x,"Y",winPos.y,"W",winSize.width,"H",winSize.height)
+    
+    console.log("TRY_DODGE: Class:", client.resourceName.toString(),"Screen:", screen, "Maximized:",maximized)
+    console.log("WINDOW GEOMETRY:","X:",winPos.x,"Y",winPos.y,"W",winSize.width,"H",winSize.height)
+    //console.log("SCREEN GEOMETRY:",screenGeometry)
     
 
     var screenWidth = screenGeometry.width
     var screenHeight = screenGeometry.height;
 
-    console.log("SCREEN HEIGHT:",screenHeight,"SCREEN WIDTH:",screenWidth);
-    console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
+    //console.log("SCREEN HEIGHT:",screenHeight,"SCREEN WIDTH:",screenWidth);
     let locationsString = panelLocationsToHide.join(",");
     let locationsDodgeString = panelLocationsToDodge.join(",");
     let togglePanelScript = `
@@ -250,42 +224,65 @@ workspace.clientMaximizeSet.connect((client, horizontalMaximized, verticalMaximi
 });
 
 workspace.clientMinimized.connect((client, horizontalMaximized, verticalMaximized) => {
+    console.log("CLIENT MINIMIZED")
     if (isManaged(client)) {
         // var maximized = isMaximized(client);
         togglePanel(client, false, panelLocationsToHide,panelLocationsToDodge);
+        reloadPanels();
     }
 });
 
 workspace.clientUnminimized.connect((client, horizontalMaximized, verticalMaximized) => {
+    console.log("CLIENT UNMINIMIZED")
     if (isManaged(client)) {
         var maximized = isMaximized(client);
         togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
+        reloadPanels();
     }
 });
 
-workspace.currentDesktopChanged.connect(() => {
-    console.log("")
-    console.log("VIRTUAL DESKTOP CHANGED")
-    unhideAllPanels(panelLocationsToHide);
-    console.log("")
+function reloadPanels() {
     const clients = workspace.clientList();
     var currentDesktop = workspace.currentDesktop;
     // keep track of the screens where a maximized window was found,
     // to only toggle panels once per screen and
     // try enabling dodge mode for the rest of windows
     const screens =[]
+    const notMaximizedClients = [];
+    const MaximizedClients = [];
     for (var i = 0; i < clients.length; i++) {
         client = clients[i];
         // togglePanel(client, false, panelLocationsToHide,panelLocationsToDodge);
-        if (client.desktop == currentDesktop && isManaged(client)){
+        if (client.desktop == currentDesktop && isManaged(client) && !client.minimized){
             var maximized = isMaximized(client);
-            if (maximized && !screens.includes(client.screen)) {
-                togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
-                screens.push(client.screen)
+            if (maximized) {
+                //if (!screens.includes(client.screen)) {
+                    //screens.push(client.screen)
+                MaximizedClients.push(client);
+                //}
+            } else {
+                notMaximizedClients.push(client);
             }
-            tryDodge(client, maximized, panelLocationsToHide,panelLocationsToDodge);
         }
     }
+    for (var i = 0; i < notMaximizedClients.length; i++){
+        client = notMaximizedClients[i];
+        tryDodge(client, false, panelLocationsToHide,panelLocationsToDodge);
+    }
+
+    for (var i = 0; i < MaximizedClients.length; i++){
+        client = MaximizedClients[i];
+        var maximized = isMaximized(client);
+        togglePanel(client, maximized, panelLocationsToHide,panelLocationsToDodge);
+    }
+}
+
+workspace.currentDesktopChanged.connect(() => {
+    console.log("")
+    console.log("VIRTUAL DESKTOP CHANGED")
+    unhideAllPanels(panelLocationsToHide);
+    console.log("")
+    reloadPanels();
 });
 
 
