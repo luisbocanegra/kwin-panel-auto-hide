@@ -92,8 +92,6 @@ var togglePanel = function (client, maximized, panelLocationsToHide, panelLocati
                     panel.hiding = "none";
                 }
             }
-        } else {
-            panel.hiding = "none";
         }
     }`
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
@@ -123,31 +121,35 @@ var togglePanelG = function (client, maximized, panelLocationsToHide) {
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
 }
 
-var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsToDodge) {
+function subtractPos(p1, p2) {
+    return {x: p1.x - p2.x, y: p1.y - p2.y};
+}
 
-    winPos = client.pos
+var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsToDodge) {
+    // window position relative to screen
+    var screen = client.screen
+    var screenGeometry = workspace.clientArea(KWin.ScreenArea, screen, 1);
+    var topLeft = {x: screenGeometry.x, y: screenGeometry.y};
+    var winPos = subtractPos(client.pos, topLeft);
     winSize = client.size
-    
+    // window position relative to panels
     windowBottomY = winPos.y + winSize.height
     windowBottomX = winPos.x + winSize.width
     windowTopY = winPos.y
     windowTopX = winPos.x
-    var area = workspace.clientArea(KWin.MaximizeArea, client);
-    areaHeight = area.height;
 
+    console.log("SCREEN GEOMETRY:",screenGeometry)
+    console.log("GEOMETRY CHANGED:",client.resourceName,"X:",winPos.x,"Y",winPos.y,"W",winSize.width,"H",winSize.height)
     
-    console.log("GEOMETRY CHANGED:",client.resourceName,areaHeight,winPos.x,winPos.y,winSize.width,winSize.height)
-    
-    var screen = client.screen
-    var screenSize = workspace.virtualScreenSize;
-    var screenWidth = screenSize.width;
-    var screenHeight = screenSize.height;
-    console.log("SCREEN HEIGHT:",screenHeight);
+
+    var screenWidth = screenGeometry.width
+    var screenHeight = screenGeometry.height;
+
+    console.log("SCREEN HEIGHT:",screenHeight,"SCREEN WIDTH:",screenWidth);
     console.log("TOGGLE_PANEL:", client.resourceName.toString(), screen, maximized, panelLocationsToHide)
     let locationsString = panelLocationsToHide.join(",");
     let locationsDodgeString = panelLocationsToDodge.join(",");
     let togglePanelScript = `
-    //print("SCREEN HEIGHT:",screenHeight);
     let locations = '${locationsString}'.split(',');
     let locationsDodge = '${locationsDodgeString}'.split(',');
     let topPanelHeight=0;
@@ -214,10 +216,6 @@ var tryDodge = function (client, maximized, panelLocationsToHide,panelLocationsT
                     panel.hiding = "windowsbelow";
                 }
             }
-
-            panel.reloadConfig();
-        } else {
-            panel.hiding = "none";
         }
     }`
     callDBus("org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell", "evaluateScript", togglePanelScript);
