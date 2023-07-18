@@ -20,5 +20,18 @@
 		<entry name="HidePanelRight" type="Bool">
 			<default>false</default>
 		</entry>
+
+		<entry name="DodgePanelTop" type="Bool">
+			<default>false</default>
+		</entry>
+		<entry name="DodgePanelBottom" type="Bool">
+			<default>true</default>
+		</entry>
+		<entry name="DodgePanelLeft" type="Bool">
+			<default>false</default>
+		</entry>
+		<entry name="DodgePanelRight" type="Bool">
+			<default>false</default>
+		</entry>
 	</group>
 </kcfg>

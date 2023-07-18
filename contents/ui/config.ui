@@ -21,6 +21,46 @@
      </property>
     </widget>
    </item>
+   <item row="18" column="1" colspan="2">
+        <widget class="QCheckBox" name="kcfg_DodgePanelTop">
+         <property name="text">
+          <string>Top</string>
+         </property>
+         <property name="enabled">
+                <bool>false</bool>
+               </property>
+        </widget>
+       </item>
+       <item row="19" column="1" colspan="2">
+        <widget class="QCheckBox" name="kcfg_DodgePanelBottom">
+         <property name="text">
+          <string>Bottom</string>
+         </property>
+         <property name="enabled">
+                <bool>false</bool>
+               </property>
+        </widget>
+       </item>
+       <item row="20" column="1" colspan="2">
+        <widget class="QCheckBox" name="kcfg_DodgePanelLeft">
+         <property name="text">
+          <string>Left</string>
+         </property>
+         <property name="enabled">
+                <bool>false</bool>
+               </property>
+        </widget>
+       </item>
+       <item row="21" column="1" colspan="2">
+        <widget class="QCheckBox" name="kcfg_DodgePanelRight">
+         <property name="text">
+          <string>Right</string>
+         </property>
+         <property name="enabled">
+                <bool>false</bool>
+               </property>
+        </widget>
+       </item>
    <item row="0" column="1" colspan="2">
     <spacer name="verticalSpacer_2">
      <property name="orientation">
@@ -211,12 +251,54 @@ Comma separated list of class names.</string>
       </font>
      </property>
      <property name="text">
-      <string>Panels to hide (location)</string>
+      <string>Panels that hide on maximized windows</string>
      </property>
     </widget>
    </item>
+   <item row="17" column="1">
+        <widget class="QLabel" name="label_7">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Panels that dodge windows entering its area</string>
+         </property>
+        </widget>
+       </item>
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+        <connection>
+         <sender>kcfg_HidePanelTop</sender>
+         <signal>toggled(bool)</signal>
+         <receiver>kcfg_DodgePanelTop</receiver>
+         <slot>setEnabled(bool)</slot>
+        </connection>
+        
+        <connection>
+        <sender>kcfg_HidePanelBottom</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>kcfg_DodgePanelBottom</receiver>
+        <slot>setEnabled(bool)</slot>
+        </connection>
+        
+        <connection>
+        <sender>kcfg_HidePanelLeft</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>kcfg_DodgePanelLeft</receiver>
+        <slot>setEnabled(bool)</slot>
+        </connection>
+
+        <connection>
+        <sender>kcfg_HidePanelRight</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>kcfg_DodgePanelRight</receiver>
+        <slot>setEnabled(bool)</slot>
+        </connection>
+       </connections>
 </ui>
