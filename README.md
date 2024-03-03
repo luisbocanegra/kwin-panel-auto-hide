@@ -1,5 +1,10 @@
 # Panel Auto Hide
 
+> [!IMPORTANT]
+> **This project is no longer being maintained**
+>
+> Now that Plasma 6 has been released with Dodge Window feature builtin, I have no need for this anymore. If anyone need to have this on Plasma 5 feel free to fork and fix it or start a new one.
+
 A KWin script that hides Plasma panels when there are maximized windows (all/top/bottom/left/right).
 
 [demo](https://github.com/luisbocanegra/kwin-panel-auto-hide/assets/15076387/63ca62d2-0325-4e42-99f2-9cc87b125d7d)
